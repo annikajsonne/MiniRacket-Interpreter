@@ -124,3 +124,6 @@ Contains test cases for the MiniRacket parsers using `Hspec`
 
 ### `EvalSpec.hs`
 Contains test cases for the evaluator functions for the MiniRacket AST using `Hspec`
+
+## License
+This project is licensed under the MIT License. See the `LICENSE` file for details.
