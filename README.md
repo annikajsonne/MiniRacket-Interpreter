@@ -47,6 +47,26 @@ parseString "true"
 parseString "(+ 3 4)"
 -- Output: Right (MathExpr Add [LiteralExpr (IntValue 3), LiteralExpr (IntValue 4)],"")
 ```
+- Parsing a negated atom:
+```haskell
+parseString "-x"
+-- Output: Right (MathExpr Sub [LiteralExpr (IntValue 0), VarExpr "x"],"")
+```
+- Parsing a variable:
+```haskell
+parseString "x"
+-- Output: Right (VarExpr "x","")
+```
+- Parsing an if expression:
+```haskell
+parseString "(if true 1 0)"
+-- Output: Right (IfExpr (LiteralExpr (BoolValue True)) (LiteralExpr (IntValue 1)) (LiteralExpr (IntValue 0)),"")
+```
+- Parsing a let expression: 
+```haskell
+parseString "(let (x 5) (+ x 3))"
+-- Output: Right (LetExpr "x" (LiteralExpr (IntValue 5)) (MathExpr Add [VarExpr "x", LiteralExpr (IntValue 3)]),"")
+```
 - Evaluating an expression:
 ```haskell
 evalString "(+ 3 4)"
@@ -72,7 +92,7 @@ Defines various error types that can occur during parsing and evaluation:
 
 Defines the abstract syntax tree (AST) and value types for MiniRacket:
 
-- `Expr`: Includes expression types like `BoolExpr`, `MathExpr`, `CompExpr`, `NotExpr`, `LiteralExpr`, and more.
+- `Expr`: Includes expression types like `BoolExpr`, `MathExpr`, `CompExpr`, `NotExpr`, `LiteralExpr`, `VarExpr`, `IfExpr` and `LetExpr`.
 - `Value`: Includes value types like `IntValue`, `BoolValue`, `PairValue`, and `ClosureValue`.
 
 ### `Lib.hs`
@@ -102,6 +122,11 @@ Implements parsers for MiniRacket expressions:
 - `compExpr`: Parses comparison expressions.
 - `pairExpr`: Parses pair expressions.
 - `consExpr`: Parses cons expressions.
+- `parseAtom`: Parses atomic expressions (variable, literal, negated atom).
+- `negateAtom`: Parses negated atomic expressions.
+- `varExpr`: Parses variable expressions.
+- `ifExpr`: Parses if expressions.
+- `letExpr`: Parses let expressions.
 - `parseExpr`: The main parser function that handles different kinds of expressions.
 - `parseString`: A helper function for parsing strings.
 
@@ -116,6 +141,9 @@ Implements the evaluator for the MiniRacket AST:
 - `evalNotExpr`: Evaluates not expressions.
 - `evalPairExpr`: Evaluates pair expressions.
 - `evalExpr`: The main evaluator function.
+- `evalVar`: Evaluates variable expressions.
+- `evalLetExpr`: Evaluates let expressions.
+- `evalIfExpr`: Evaluates if expressions.
 - `parseAndEval`: Parses and then evaluates a string.
 - `evalString`: Evaluates a MiniRacket expression from a string.
 
