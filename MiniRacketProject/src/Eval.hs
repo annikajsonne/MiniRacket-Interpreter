@@ -7,6 +7,7 @@ import Environment
 import MiniRacketParser
 import Error
 
+
 import Control.Applicative
 import Control.Monad
 import Parser
@@ -252,6 +253,7 @@ evalPairExpr = do
 -- different options. Note that depending on what you put first might
 -- change how you evaluate your expressions.
 
+-- evaluating an expression returns a value
 evalExpr :: Evaluator Value
 evalExpr =
     evalBoolExpr
@@ -265,6 +267,12 @@ evalExpr =
     evalLiteral
     <|>
     evalPairExpr
+    <|>
+    evalVar
+    <|>
+    evalIfExpr
+    <|>
+    evalLetExpr
 
 -- parses the string then evaluates it
 parseAndEval :: String -> Either ErrorType (Value, (ValueEnv, Expr))
@@ -283,3 +291,67 @@ getValue (Left err) = Left err
 -- Consume a string, parse it, and then try to evaluate it
 evalString :: String -> Either ErrorType Value
 evalString = getValue . parseAndEval
+
+
+-- Beginning of additions to Eval.hs for Part 2 of the MiniRacketProject
+
+-- Evaluate a let expression. This requires evaluating the
+-- argument to the identifier. Once that is evaluated, we
+-- bind the value to the name in a new environment, then
+-- we evaluated the body with this new environment
+evalLetExpr :: Evaluator Value
+evalLetExpr = do
+    (env, LetExpr letName valexpr body) <- next
+    case getValue (eval evalExpr (env, valexpr)) of
+        -- we got a closure from it, but it doesn't have a name, 
+        -- so let's add that to the closure as its 'funname' 
+        Right (ClosureValue "" argName funBody cenv) ->
+            let env' = Environment.bindName letName (ClosureValue letName argName funBody cenv) cenv in
+                case getValue (eval evalExpr (env', body)) of
+                    Right v -> return v
+                    Left err -> evalError err
+        Right nameval ->
+            case getValue (eval evalExpr (Environment.bindName letName nameval env, body)) of
+                Right letval -> return letval
+                Left err -> evalError err
+        Left err -> evalError err
+
+
+-- Evaluate an if expression, this requires evaluating
+-- the first expression in the if, which is the predicate (boolean value).
+-- Only until this returns a value should you evaluate one
+-- of the branches. You should NOT evaluate both branches,
+-- just the 2nd expression if the test case returns true,
+-- and the 3rd expression if the test case returns false
+evalIfExpr :: Evaluator Value
+evalIfExpr = do
+    (env, IfExpr boolexpr texpr fexpr) <- next
+    case getValue $ eval evalExpr (env, boolexpr) of 
+        Right (BoolValue True) -> do
+            case getValue $ eval evalExpr (env, texpr) of
+                Right val -> return val
+                Left err -> evalError err
+        Right (BoolValue False) -> do
+            case getValue $ eval evalExpr (env, fexpr) of
+                Right val -> return val
+                Left err -> evalError err
+        Left err -> evalError err
+
+
+
+
+
+-- Evaluate a Var, this requires looking up the symbol
+-- in the current environment. If it's there, we return
+-- the value. If it's not, we generate a NoSymbol error
+-- via: noSymbol $ "symbol " ++ name ++ " not found"
+evalVar :: Evaluator Value
+evalVar = do 
+    (env, VarExpr name) <- next 
+    case (Environment.lookup name env) of
+        Just val -> return val
+        Nothing -> noSymbol $ "symbol " ++ name ++ " not found" 
+
+
+-- End of additions to Eval.hs for Part 2 of the MiniRacketProject
+

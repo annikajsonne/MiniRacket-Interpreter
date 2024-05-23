@@ -25,14 +25,12 @@ data CompOp =
 -- define the expression types
 data Expr = 
       BoolExpr BoolOp [Expr]
-    | NotExpr Expr
+    | NotExpr Expr   
     | MathExpr MathOp [Expr] 
     | CompExpr CompOp Expr Expr
-    | VarExpr String
-    | LiteralExpr Value 
-    | LambdaExpr String Expr
+    | VarExpr String 
+    | LiteralExpr Value
     | IfExpr Expr Expr Expr
-    | ApplyExpr Expr Expr
     | LetExpr String Expr Expr
     | PairExpr Expr Expr 
     | EmptyExpr 

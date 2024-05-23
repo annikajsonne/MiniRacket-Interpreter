@@ -48,4 +48,18 @@ spec = do
             evalString "(div 6 3)" `shouldBe` Right (IntValue 2)
         it "evaluates mod (mod 7 3)" $
             evalString "(mod 7 3)" `shouldBe` Right (IntValue 1)
-        
+    describe "evaluating lets" $ do
+        it "evaluates (let (x 5) (+ x 3))" $ do
+            evalString "(let (x 5) (+ x 3))" `shouldBe` Right (IntValue 8)
+        it "evaluates (let (x 70) (* x 2))" $ do
+            evalString "(let (x 70) (* x 2))" `shouldBe` Right (IntValue 140)
+    describe "evaluating if statements" $ do
+        it "evaluates (if (< 4 5) true false)" $
+            evalString "(if (< 4 5) true false)" `shouldBe` Right (BoolValue True)
+        it "evaluates (if (< 5 4) 69 96)" $
+            evalString "(if (< 5 4) 69 96)" `shouldBe` Right (IntValue 96)
+    describe "evaluating variables" $ do
+        it "evaluates hello" $
+            evalString "hello" `shouldBe` Left (NoSymbol "symbol hello not found")
+        it "evaluates x" $
+            evalString "x" `shouldBe` Left (NoSymbol "symbol x not found")

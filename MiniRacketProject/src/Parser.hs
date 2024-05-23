@@ -1,3 +1,5 @@
+{-# LANGUAGE LambdaCase #-}
+
 module Parser where
 
 import Control.Applicative

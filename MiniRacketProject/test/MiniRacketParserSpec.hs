@@ -92,4 +92,25 @@ spec = do
             parseString "(cons (+ 1 2) (- 3 4))" `shouldBe` Right (PairExpr (MathExpr Add [LiteralExpr (IntValue 1), LiteralExpr (IntValue 2)]) (MathExpr Sub [LiteralExpr (IntValue 3), LiteralExpr (IntValue 4)]), "")
         it "parses consExpr: with boolean values" $
             parseString "(cons true false)" `shouldBe` Right (PairExpr (LiteralExpr (BoolValue True)) (LiteralExpr (BoolValue False)), "")
-
+    describe "parse negateAtom" $ do
+        it "parses negated variable: -x" $
+            parseString "-x" `shouldBe` Right (MathExpr Sub [LiteralExpr (IntValue 0), VarExpr "x"], "")
+        it "fails to parse negated number: -5 (handled by literalExpr)" $
+            parseString "-5" `shouldNotBe` Right (NotExpr (LiteralExpr (IntValue 5)), "")
+    describe "parse varExpr" $ do
+        it "parses simple variable: x" $
+            parseString "x" `shouldBe` Right (VarExpr "x", "")
+        it "fails to parse a keyword as a variable: not" $
+            parse varExpr "not" `shouldBe` Left (ParseError "not is a keyword, it cannot be used as a variable")
+        it "parses complex variable name: x1y2z" $
+            parseString "x1y2z" `shouldBe` Right (VarExpr "x1y2z", "")
+    describe "parse ifExpr" $ do
+        it "parses simple if expression: (if true 1 0)" $
+            parseString "(if true 1 0)" `shouldBe` Right (IfExpr (LiteralExpr (BoolValue True)) (LiteralExpr (IntValue 1)) (LiteralExpr (IntValue 0)), "")
+        it "parses complex if expression with nested operations" $
+            parseString "(if (and true false) (+ 1 1) (- 2 1))" `shouldBe` Right (IfExpr (BoolExpr And [LiteralExpr (BoolValue True), LiteralExpr (BoolValue False)]) (MathExpr Add [LiteralExpr (IntValue 1), LiteralExpr (IntValue 1)]) (MathExpr Sub [LiteralExpr (IntValue 2), LiteralExpr (IntValue 1)]), "")
+    describe "parse letExpr" $ do
+        it "parses simple let expression: let (x 1) x" $
+            parseString "(let (x 1) x)" `shouldBe` Right (LetExpr "x" (LiteralExpr (IntValue 1)) (VarExpr "x"), "")
+        it "parses complex let expression with nested expressions" $
+            parseString "(let (x (+ 1 2)) (* x x))" `shouldBe` Right (LetExpr "x" (MathExpr Add [LiteralExpr (IntValue 1), LiteralExpr (IntValue 2)]) (MathExpr Mul [VarExpr "x", VarExpr "x"]), "")
