@@ -67,6 +67,71 @@ parseString "(if true 1 0)"
 parseString "(let (x 5) (+ x 3))"
 -- Output: Right (LetExpr "x" (LiteralExpr (IntValue 5)) (MathExpr Add [VarExpr "x", LiteralExpr (IntValue 3)]),"")
 ```
+- Parsing a lambda expression:
+```haskell
+parseString "(lambda (x) x)"
+-- Output: Right (LambdaExpr "x" (VarExpr "x"),"")
+```
+- Parsing an apply expression:
+```haskell
+parseString "((lambda (x) (+ x 1)) 5)"
+-- Output: Right (ApplyExpr (LambdaExpr "x" (MathExpr Add [VarExpr "x", LiteralExpr (IntValue 1)])) (LiteralExpr (IntValue 5)),"")
+```
+- Evaluating a number:
+```haskell
+evalString "1235"
+-- Output: Right (IntValue 1235)
+```
+- Evaluating a boolean:
+```haskell
+evalString "true"
+-- Output: Right (BoolValue True)
+```
+- Evaluating a mathematical expression:
+```haskell
+evalString "(+ 3 4)"
+-- Output: Right (IntValue 7)
+```
+- Evaluating a comparison expression:
+```haskell
+evalString "(< 3 4)"
+-- Output: Right (BoolValue True)
+```
+- Evaluating a not expression:
+```haskell
+evalString "(not true)"
+-- Output: Right (BoolValue False)
+```
+- Evaluating a pair expression:
+```haskell
+evalString "(cons 1 2)"
+-- Output: Right (PairValue (IntValue 1, IntValue 2))
+```
+- Evaluating a variable expression:
+```haskell
+evalString "x"
+-- Output: Left (NoSymbol "symbol x not found")
+```
+- Evaluating a let expression:
+```haskell
+evalString "(let (x 5) (+ x 3))"
+-- Output: Right (IntValue 8)
+```
+- Evaluating an if expression:
+```haskell
+evalString "(if true 1 0)"
+-- Output: Right (IntValue 1)
+```
+- Evaluating a lambda expression:
+```haskell
+evalString "(lambda (x) x)"
+-- Output: Right (ClosureValue "" "x" (VarExpr "x") [])
+```
+- Evaluating an application expression:
+```haskell
+evalString "((lambda (x) (+ x 1)) 5)"
+-- Output: Right (IntValue 6)
+```
 - Evaluating an expression:
 ```haskell
 evalString "(+ 3 4)"
@@ -92,7 +157,7 @@ Defines various error types that can occur during parsing and evaluation:
 
 Defines the abstract syntax tree (AST) and value types for MiniRacket:
 
-- `Expr`: Includes expression types like `BoolExpr`, `MathExpr`, `CompExpr`, `NotExpr`, `LiteralExpr`, `VarExpr`, `IfExpr` and `LetExpr`.
+- `Expr`: Includes expression types like `BoolExpr`, `MathExpr`, `CompExpr`, `NotExpr`, `LiteralExpr`, `VarExpr`, `IfExpr`, `LetExpr`, `LambdaExpr` and `ApplyExpr`.
 - `Value`: Includes value types like `IntValue`, `BoolValue`, `PairValue`, and `ClosureValue`.
 
 ### `Lib.hs`
@@ -127,6 +192,8 @@ Implements parsers for MiniRacket expressions:
 - `varExpr`: Parses variable expressions.
 - `ifExpr`: Parses if expressions.
 - `letExpr`: Parses let expressions.
+- `lambdaExpr`: Parses lambda expressions.
+- `applyExpr`: Parses application expressions.
 - `parseExpr`: The main parser function that handles different kinds of expressions.
 - `parseString`: A helper function for parsing strings.
 
@@ -140,10 +207,12 @@ Implements the evaluator for the MiniRacket AST:
 - `evalCompExpr`: Evaluates comparison expressions.
 - `evalNotExpr`: Evaluates not expressions.
 - `evalPairExpr`: Evaluates pair expressions.
-- `evalExpr`: The main evaluator function.
 - `evalVar`: Evaluates variable expressions.
 - `evalLetExpr`: Evaluates let expressions.
 - `evalIfExpr`: Evaluates if expressions.
+- `evalLambdaExpr`: Evaluates lambda expressions.
+- `evalApplyExpr`: Evaluates application expressions.
+- `evalExpr`: The main evaluator function.
 - `parseAndEval`: Parses and then evaluates a string.
 - `evalString`: Evaluates a MiniRacket expression from a string.
 

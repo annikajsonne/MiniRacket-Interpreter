@@ -357,7 +357,6 @@ evalVar = do
 
 -- Beginning of additions to Eval.hs for Part 3 of the MiniRacketProject
 
--- TODO: Evaluate Lambda Expressions
 -- evaluate a lambda expression, which should result in a ClosureValue, 
 -- containing the function name (if there is one), formal parameter name, and body,
 -- the ClosureValue can later be used when evaluating an applyExpr. 
@@ -368,7 +367,6 @@ evalLambdaExpr = do
     (env, LambdaExpr argName body) <- next
     return $ ClosureValue "" argName body env
 
--- TODO: Implement callFun
 -- This is a helper function for evaluating function application expressions
 -- callFun expects a closure and a value. Inside the closure, 
 -- we find the formal parameter name (which can then be used in the function body). This
@@ -387,7 +385,6 @@ callFun c@(ClosureValue funName argName body cenv) argVal =
     in getValue $ eval evalExpr (env', body)
 callFun _ _ = error "callFun must have a closure passed to it"
 
--- TODO: Evaluate function application expressions
 -- Evaluate applyExpr, which is a function call to an argument. 
 -- The first expression needs to evaluate to a closure from
 -- a lambda expression or a let binding. The second expression
