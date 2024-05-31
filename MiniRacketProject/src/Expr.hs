@@ -32,6 +32,8 @@ data Expr =
     | LiteralExpr Value
     | IfExpr Expr Expr Expr
     | LetExpr String Expr Expr
+    | ApplyExpr Expr Expr
+    | LambdaExpr String Expr 
     | PairExpr Expr Expr 
     | EmptyExpr 
     deriving (Show, Eq)

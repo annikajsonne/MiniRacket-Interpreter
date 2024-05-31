@@ -1,6 +1,5 @@
 module EvalSpec where
 
-
 import Test.Hspec
 import Parser
 import Expr
@@ -30,12 +29,12 @@ spec = do
     describe "evaluating and" $ do 
         it "evaluates 'and true false'" $
             evalString "(and true false)" `shouldBe` Right (BoolValue False)
-        it "evaluates 'not false false'" $
+        it "evaluates 'and true true'" $
             evalString "(and true true)" `shouldBe` Right (BoolValue True)
     describe "evaluating or" $ do 
-        it "evaluates 'and true false'" $
+        it "evaluates 'or true false'" $
             evalString "(or true false)" `shouldBe` Right (BoolValue True)
-        it "evaluates 'not false false'" $
+        it "evaluates 'or false false'" $
             evalString "(or false false)" `shouldBe` Right (BoolValue False)
     describe "evaluating math expressions" $ do
         it "evaluates addition (+ 1 3)" $
@@ -63,3 +62,13 @@ spec = do
             evalString "hello" `shouldBe` Left (NoSymbol "symbol hello not found")
         it "evaluates x" $
             evalString "x" `shouldBe` Left (NoSymbol "symbol x not found")
+    describe "evaluating lambda expressions" $ do
+        it "evaluates (lambda (x) x)" $
+            evalString "(lambda (x) x)" `shouldBe` Right (ClosureValue "" "x" (VarExpr "x") [])
+        it "evaluates (lambda (x) (+ x 1))" $
+            evalString "(lambda (x) (+ x 1))" `shouldBe` Right (ClosureValue "" "x" (MathExpr Add [VarExpr "x", LiteralExpr (IntValue 1)]) [])
+    describe "evaluating apply expressions" $ do
+        it "evaluates ((lambda (x) x) 5)" $
+            evalString "((lambda (x) x) 5)" `shouldBe` Right (IntValue 5)
+        it "evaluates ((lambda (x) (+ x 1)) 5)" $
+            evalString "((lambda (x) (+ x 1)) 5)" `shouldBe` Right (IntValue 6)

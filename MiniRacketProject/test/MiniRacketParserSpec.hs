@@ -114,3 +114,13 @@ spec = do
             parseString "(let (x 1) x)" `shouldBe` Right (LetExpr "x" (LiteralExpr (IntValue 1)) (VarExpr "x"), "")
         it "parses complex let expression with nested expressions" $
             parseString "(let (x (+ 1 2)) (* x x))" `shouldBe` Right (LetExpr "x" (MathExpr Add [LiteralExpr (IntValue 1), LiteralExpr (IntValue 2)]) (MathExpr Mul [VarExpr "x", VarExpr "x"]), "")
+    describe "parse lambdaExpr" $ do
+        it "parses simple lambda expression: (lambda (x) x)" $
+            parseString "(lambda (x) x)" `shouldBe` Right (LambdaExpr "x" (VarExpr "x"), "")
+        it "parses complex lambda expression: (lambda (x) (+ x 1))" $
+            parseString "(lambda (x) (+ x 1))" `shouldBe` Right (LambdaExpr "x" (MathExpr Add [VarExpr "x", LiteralExpr (IntValue 1)]), "")
+    describe "parse applyExpr" $ do
+        it "parses simple apply expression: ((lambda (x) x) 5)" $
+            parseString "((lambda (x) x) 5)" `shouldBe` Right (ApplyExpr (LambdaExpr "x" (VarExpr "x")) (LiteralExpr (IntValue 5)), "")
+        it "parses complex apply expression: ((lambda (x) (+ x 1)) 5)" $
+            parseString "((lambda (x) (+ x 1)) 5)" `shouldBe` Right (ApplyExpr (LambdaExpr "x" (MathExpr Add [VarExpr "x", LiteralExpr (IntValue 1)])) (LiteralExpr (IntValue 5)), "")

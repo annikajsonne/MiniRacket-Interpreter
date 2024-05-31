@@ -4,7 +4,6 @@ import Parser
 import Expr
 import Control.Applicative
 import Error ( ErrorType ) 
-import Debug.Trace
 
 parseBool :: Parser Bool
 parseBool = do
@@ -57,19 +56,17 @@ literalExpr :: Parser Expr
 literalExpr = LiteralExpr <$> literal
 
 keywordList :: [String]
-keywordList = ["false", "true", "not", "and", "or", "div", "mod", "equal?", "if", "let"]
+keywordList = ["false", "true", "not", "and", "or", "div", "mod", "equal?", "if", "let", "lambda"]
 
 -- try to parse a keyword, otherwise it is a variable, this can be
 -- used to check if the identifier we see (i.e., variable name) is
 -- actually a keyword, which is not legal
 parseKeyword :: String -> Parser String
-parseKeyword keyword = trace ("parseKeyword called with: " ++ keyword) $ do
+parseKeyword keyword =  do
     name <- identifier
-    traceShow ("parseKeyword identifier: " ++ name) $
-        if name `elem` keywordList && keyword == name
-        then return name
-        else trace ("parseKeyword failed: saw " ++ name ++ ", expected " ++ keyword) $
-             failParse $ "saw " ++ name ++ ", expected " ++ keyword
+    if name `elem` keywordList && keyword == name
+    then return name
+    else failParse $ "saw " ++ name ++ ", expected " ++ keyword
 
 
 notExpr :: Parser Expr
@@ -148,7 +145,7 @@ negateAtom :: Parser Expr
 negateAtom = do
     symbol "-"
     var <- parseAtom
-    trace "negateAtom parsed" $ return $ MathExpr Sub [LiteralExpr (IntValue 0), var]
+    return $ MathExpr Sub [LiteralExpr (IntValue 0), var]
 
 -- parse a var expression, here we need to make sure that
 -- the identifier is *not* a keyword before accepting it
@@ -156,10 +153,9 @@ negateAtom = do
 varExpr :: Parser Expr
 varExpr = do
     v <- identifier
-    trace ("parseVarExpr parsed identifier: " ++ v) $
-        if v `elem` keywordList
-        then failParse (v ++ " is a keyword, it cannot be used as a variable")
-        else return (VarExpr v)
+    if v `elem` keywordList
+    then failParse (v ++ " is a keyword, it cannot be used as a variable")
+    else return (VarExpr v)
 
 
 -- parse an if-expression, which begins with the keyword if,
@@ -174,7 +170,7 @@ ifExpr = do
 -- to be bound, an expression to bind to that name, and a right
 -- parenthesis, and then the body of the let expression
 letExpr :: Parser Expr
-letExpr = trace "letExpr called" $ do
+letExpr = do
     parseKeyword "let"
     symbol "("
     var <- varExpr
@@ -183,8 +179,35 @@ letExpr = trace "letExpr called" $ do
             v <- parseExpr
             symbol ")"
             body <- parseExpr
-            traceShow ("letExpr result: " ++ show (LetExpr argname v body)) $ return (LetExpr argname v body)
+            return (LetExpr argname v body)
         _ -> failParse "expected var name in let binding"
+
+-- End of additions to MiniRacketParser.hs for Part 2 of the
+--   MiniRacketProject
+
+-- Beginning of additions to MiniRacketParser.hs for Part 3 of the
+--   MiniRacketProject
+
+-- parse a lambda expression which is a lambda, argument, 
+-- and body, with proper parenthesis around it
+lambdaExpr :: Parser Expr
+lambdaExpr = do
+    parseKeyword "lambda"
+    symbol "("
+    arg <- identifier
+    symbol ")"
+    body <- parseExpr
+    return (LambdaExpr arg body)
+
+-- This expression consists of a function which is being applied to 
+--   a parameter expression.
+applyExpr :: Parser Expr
+applyExpr = do
+    lamFunc <- parseExpr
+    ApplyExpr lamFunc <$> parseExpr
+
+-- End of additions to MiniRacketParser.hs for Part 3 of the
+--   MiniRacketProject
 
 -- the main parsing function which alternates between all 
 -- the options for possible expressions
@@ -198,10 +221,9 @@ parseExpr = do
         <|> compExpr
         <|> pairExpr
         <|> consExpr
+        <|> lambdaExpr
+        <|> applyExpr
         <|> ifExpr
         <|> letExpr
     )
     <|> literalExpr
-
--- End of additions to MiniRacketParser.hs for Part 2 of the
---   MiniRacketProject
